@@ -29,8 +29,8 @@
 ###
 
 """
-Add a description of the plugin (to be presented to the user inside the wizard)
-here.  This should describe *what* the plugin does.
+This plugin will automatically snarf Jira ticket numbers, and reply with
+some basic information about the ticket.
 """
 
 import supybot

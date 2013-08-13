@@ -45,19 +45,19 @@ def configure(advanced):
     # registry as appropriate.
     from supybot.questions import expect, anything, something, yn
     Jira = conf.registerPlugin('Jira', True)
-    server = expect("""What is the URL for the Jira instance?""")
-    user = expect("""What is the username for the Jira user?""")
-    password = expect("""What is the password for the Jira user?""")
-    if yn("""Would you like the plugin to verify your Jira instance's
-            SSL certificate?""", default=False):
-        Jira.verifySSL.setValue("True")
-    else:
-        Jira.verifySSL.setValue("False")
-    #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
-    #                        default="JRA-[0-9]+")
+    server = something("""What is the URL for the Jira instance?""")
+    user = something("""What is the username for the Jira user?""")
+    password = something("""What is the password for the Jira user?""")
+    verifySSL = yn("""Would you like the plugin to verify your Jira instance's
+            SSL certificate?""", default=False)
+
     Jira.server.setValue(server)
     Jira.user.setValue(user)
     Jira.password.setValue(password)
+    Jira.verifySSL.setValue(verifySSL)
+
+    #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
+    #                        default="JRA-[0-9]+")
     #Jira.snarfRegex.setValue(snarfRegex)
 
 Jira = conf.registerPlugin('Jira')
@@ -70,6 +70,7 @@ conf.registerGlobalValue(Jira, 'password',
 	registry.String('', _("""Password for Jira authentication.""")))
 conf.registerGlobalValue(Jira, 'verifySSL',
     registry.Boolean(False, _("""Verify SSL certificate for Jira instance.""")))
+
 #conf.registerGlobalValue(Jira, 'snarfRegex', 
 #    registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
 
