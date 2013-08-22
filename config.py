@@ -38,6 +38,9 @@ except:
     # without the i18n module
     _ = lambda x:x
 
+template = "(%(type)s %(key)s) %(summary)s [ %(assignee)s%(displayTime)s ] "\
+           "%(status)s %(url)s"
+
 def configure(advanced):
     # This will be called by supybot to configure this module.  advanced is
     # a bool that specifies whether the user identified himself as an advanced
@@ -48,12 +51,19 @@ def configure(advanced):
     server = something("""What is the URL for the Jira instance?""")
     user = something("""What is the username for the Jira user?""")
     password = something("""What is the password for the Jira user?""")
+    template = something("""What output template would you like?""",
+            default=template)
+    snarfRegex = something("""What is the prefix for your Jira issue keys?""",
+            default="CLB")
+    snarfRegex = ''.join((snarfRegex, '-[0-9]+'))
     verifySSL = yn("""Would you like the plugin to verify your Jira instance's
             SSL certificate?""", default=False)
 
     Jira.server.setValue(server)
     Jira.user.setValue(user)
     Jira.password.setValue(password)
+    Jira.template.setValue(template)
+    Jira.snarfRegex.setValue(snarfRegex)
     Jira.verifySSL.setValue(verifySSL)
 
     #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
@@ -68,10 +78,12 @@ conf.registerGlobalValue(Jira, 'user',
 	registry.String('', _("""Username for Jira authentication.""")))
 conf.registerGlobalValue(Jira, 'password', 
 	registry.String('', _("""Password for Jira authentication.""")))
+conf.registerGlobalValue(Jira, 'template', 
+	registry.String(template, 
+        _("""Template for the plugin's output formatting.""")))
 conf.registerGlobalValue(Jira, 'verifySSL',
     registry.Boolean(False, _("""Verify SSL certificate for Jira instance.""")))
-
-#conf.registerGlobalValue(Jira, 'snarfRegex', 
-#    registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
+conf.registerGlobalValue(Jira, 'snarfRegex', 
+    registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

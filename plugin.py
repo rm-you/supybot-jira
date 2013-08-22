@@ -29,6 +29,7 @@
 ###
 
 import supybot.utils as utils
+import supybot.conf as conf
 from supybot.commands import *
 import supybot.plugins as plugins
 import supybot.ircutils as ircutils
@@ -57,6 +58,7 @@ class Jira(callbacks.PluginRegexp):
         self.server = self.registryValue('server')
         self.user = self.registryValue('user')
         self.password = self.registryValue('password')
+        self.template = self.registryValue('template')
         self.verifySSL = self.registryValue('verifySSL')
         options = { 'server': self.server, 'verify': self.verifySSL }
         auth = (self.user, self.password)
@@ -74,28 +76,39 @@ class Jira(callbacks.PluginRegexp):
             return
 
         if issue:
-            issuetype = issue.fields.issuetype.name
-            key = issue.key
-            name = issue.fields.summary
-            status = issue.fields.status.name
-            time = issue.fields.timeestimate
             if issue.fields.assignee:
                 assignee = issue.fields.assignee.displayName
             else:
                 assignee = "Unassigned"
+
+            time = issue.fields.timeestimate
             if time:
                 hours = time / 60 / 60
                 minutes = time / 60 % 60
                 displayTime = " / %ih%im" % (hours, minutes)
             else:
                 displayTime = ""
-            url = ''.join((self.server, '/browse/', key))
 
-            replytext = ("(%s %s) %s [ \x032%s\x03%s ] \x033\x02%s\x02\x03 %s"
-                        % (issuetype, key, name, assignee, displayTime, status,
-                            url))
+            url = ''.join((self.server, '/browse/', issue.key))
+
+            values = {  "type": issue.fields.issuetype.name,
+                        "key": issue.key,
+                        "summary": issue.fields.summary,
+                        "status": _c(_b(issue.fields.status.name), "green"),
+                        "assignee": _c(assignee, "blue"),
+                        "displayTime": displayTime,
+                        "url": url,
+                    }
+
+            replytext = (self.template % values)
             irc.reply(replytext, prefixNick=False)
-    getIssue.__doc__ = '(?P<issue>%s)' % snarfRegex
+    getIssue.__doc__ = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
+
+def _b(text):
+    return ircutils.bold(text)
+
+def _c(text, color):
+    return ircutils.mircColor(text, color)
 
 Class = Jira
 
