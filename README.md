@@ -30,7 +30,7 @@ Right now, the bot is a simple snarfer. Just say anything that includes a valid 
 The default output looks like this:<br />
 
 &lt;user&gt; I've just finished up with JRA-123 and moved the code to our Testing environment.<br />
-&lt;supybot&gt; (Story JRA-123) Add pagination to the user list [ <font color="blue">Adam Harwell</font> ] <font color="green"><b>Ready For Test</b></font> <a>https://jira.mysite.com/browse/JRA-123</a><br />
+&lt;supybot&gt; (Story JRA-123) Add Pagination [ <font color="blue">Philip Fry</font> ] <font color="green"><b>Ready For Test</b></font> <a>https://jira.mysite.com/browse/JRA-123</a><br />
 
 <b>Planned features:</b>
 
