@@ -35,6 +35,7 @@ import supybot.plugins as plugins
 import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 from jira.client import JIRA
+import re
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -45,10 +46,12 @@ except:
     _ = lambda x:x
 
 snarfRegex = 'CLB-[0-9]+'
+snarfRegexObject = re.compile(snarfRegex)
 
 class Jira(callbacks.PluginRegexp):
-    """This plugin will automatically snarf Jira ticket numbers, and reply with
-    some basic information about the ticket."""
+    """This plugin communicates with Jira. It will automatically snarf
+    Jira ticket numbers, and reply with some basic information
+    about the ticket. It can also close and comment on Jira tasks."""
     threaded = True
     regexps = ['getIssue']
 
@@ -103,6 +106,16 @@ class Jira(callbacks.PluginRegexp):
             replytext = (self.template % values)
             irc.reply(replytext, prefixNick=False)
     getIssue.__doc__ = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
+
+    def resolve(self, irc, msg, args, matched_ticket, comment):
+        """<ticket>takes ticket ID-number and an optional closing comment
+
+        Should return nothing, but might if bad things happen."""
+        irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
+        irc.reply("will also add the comment '%s'." % comment, action=True)
+        irc.reply("Not implemented yet. I think.")
+    resolve = wrap(resolve, [('matches', snarfRegexObject, "Can't find the ticket number to resolve"), 'text'])
+#    resolve = wrap(resolve, ['something', 'text'])
 
 def _b(text):
     return ircutils.bold(text)
