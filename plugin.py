@@ -75,6 +75,7 @@ class Jira(callbacks.PluginRegexp):
         try:
             issue = self.jira.issue(issueName)
         except:
+            irc.reply("cannot find %s bug" % issueName, action=True)
             print "Invalid Jira snarf: %s" % issueName
             return
 
