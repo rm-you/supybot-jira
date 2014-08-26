@@ -133,15 +133,20 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("cannot find %s bug" % matched_ticket.string, action=True)
             print "Invalid Jira snarf: %s" % matched_ticket.string
             return
-        if comment:
-            irc.reply("will also add the comment '%s'." % comment, action=True)
-            try:
-                self.jira.add_comment(issue, comment)
-            except:
-                irc.reply("cannot comment")
-                print "Cannot comment on: %s" % matched_ticket.string
+        try:
+            transitions = self.jira.transitions(issue)
+        except:
+            irc.reply("cannot get transitions states")
+            return
+        for t in transitions:
+            if t['to']['name'] == "Resolved":
+                try:
+                    if self.jira.transition_issue(issue, t['to']['id'], comment):
+                        irc.reply("Resolved successfully")
+                except:
+                    irc.reply("Cannot transition to Resolved")
                 return
-        irc.reply("Not implemented yet. But will try to put the comment.")
+        irc.reply("No transition to Resolved state possible from the ticket.")
     resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 #    resolve = wrap(resolve, ['something', 'text'])
 
