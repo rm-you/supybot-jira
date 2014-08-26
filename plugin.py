@@ -141,10 +141,11 @@ class Jira(callbacks.PluginRegexp):
         for t in transitions:
             if t['to']['name'] == "Resolved":
                 try:
-                    if self.jira.transition_issue(issue, t['to']['id'], comment):
-                        irc.reply("Resolved successfully")
+                    self.jira.transition_issue(issue, t['id'], { "resolution": {"name": "Fixed"} }, comment)
                 except:
                     irc.reply("Cannot transition to Resolved")
+                    return
+                irc.reply("Resolved successfully")
                 return
         irc.reply("No transition to Resolved state possible from the ticket.")
     resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
