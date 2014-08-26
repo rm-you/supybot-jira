@@ -46,7 +46,6 @@ except:
     _ = lambda x:x
 
 snarfRegex = 'CLB-[0-9]+'
-snarfRegexObject = re.compile(snarfRegex)
 
 class Jira(callbacks.PluginRegexp):
     """This plugin communicates with Jira. It will automatically snarf
@@ -109,13 +108,13 @@ class Jira(callbacks.PluginRegexp):
     getIssue.__doc__ = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
 
     def resolve(self, irc, msg, args, matched_ticket, comment):
-        """<ticket>takes ticket ID-number and an optional closing comment
+        """<ticket> <comment> takes ticket ID-number and the closing comment
 
         Should return nothing, but might if bad things happen."""
         irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
         irc.reply("will also add the comment '%s'." % comment, action=True)
         irc.reply("Not implemented yet. I think.")
-    resolve = wrap(resolve, [('matches', snarfRegexObject, "Can't find the ticket number to resolve"), 'text'])
+    resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
 #    resolve = wrap(resolve, ['something', 'text'])
 
 def _b(text):
