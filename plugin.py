@@ -98,7 +98,7 @@ class Jira(callbacks.PluginRegexp):
                         "key": issue.key,
                         "summary": issue.fields.summary,
                         "status": _c(_b(issue.fields.status.name), "green"),
-                        "assignee": _c(assignee, "blue"),
+                        "assignee": _c(assignee, "light blue"),
                         "displayTime": displayTime,
                         "url": url,
                     }
@@ -107,14 +107,42 @@ class Jira(callbacks.PluginRegexp):
             irc.reply(replytext, prefixNick=False)
     getIssue.__doc__ = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
 
-    def resolve(self, irc, msg, args, matched_ticket, comment):
-        """<ticket> <comment> takes ticket ID-number and the closing comment
+    def comment(self, irc, msg, args, matched_ticket, comment):
+        """<ticket> <comment> takes ticket ID-number and the comment
 
         Should return nothing, but might if bad things happen."""
+
+        try:
+            if self.jira.add_comment(matched_ticket.string, comment):
+                irc.reply("OK")
+        except:
+            irc.reply("cannot comment")
+            print "Cannot comment on: %s" % matched_ticket.string
+            return
+    comment = wrap(comment, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
+
+    def resolve(self, irc, msg, args, matched_ticket, comment):
+        """<ticket> <comment> takes ticket ID-number and optionally closing comment
+
+        Should return nothing, but might if bad things happen."""
+
         irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
-        irc.reply("will also add the comment '%s'." % comment, action=True)
-        irc.reply("Not implemented yet. I think.")
-    resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
+        try:
+            issue = self.jira.issue(matched_ticket.string)
+        except:
+            irc.reply("cannot find %s bug" % matched_ticket.string, action=True)
+            print "Invalid Jira snarf: %s" % matched_ticket.string
+            return
+        if comment:
+            irc.reply("will also add the comment '%s'." % comment, action=True)
+            try:
+                self.jira.add_comment(issue, comment)
+            except:
+                irc.reply("cannot comment")
+                print "Cannot comment on: %s" % matched_ticket.string
+                return
+        irc.reply("Not implemented yet. But will try to put the comment.")
+    resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 #    resolve = wrap(resolve, ['something', 'text'])
 
 def _b(text):
