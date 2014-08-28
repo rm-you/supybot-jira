@@ -79,17 +79,17 @@ class Jira(callbacks.PluginRegexp):
             return
 
         if issue:
-            if issue.fields.assignee:
+            try:
                 assignee = issue.fields.assignee.displayName
-            else:
+            except:
                 assignee = "Unassigned"
 
-            time = issue.fields.timeestimate
-            if time:
+            try:
+                time = issue.fields.timeestimate
                 hours = time / 60 / 60
                 minutes = time / 60 % 60
                 displayTime = " / %ih%im" % (hours, minutes)
-            else:
+            except:
                 displayTime = ""
 
             url = ''.join((self.server, '/browse/', issue.key))
