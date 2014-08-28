@@ -129,6 +129,11 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("cannot find %s bug" % matched_ticket.string, action=True)
             print "Invalid Jira snarf: %s" % matched_ticket.string
             return
+
+        if issue.fields.status.name == "Resolved":
+            irc.reply("Too late! The %s issue is already resolved." % matched_ticket.string)
+            return
+
         try:
             transitions = self.jira.transitions(issue)
         except:
