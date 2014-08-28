@@ -121,11 +121,7 @@ class Jira(callbacks.PluginRegexp):
             return
     comment = wrap(comment, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
 
-    def resolve(self, irc, msg, args, matched_ticket, comment):
-        """<ticket> <comment> takes ticket ID-number and optionally closing comment
-
-        Should return nothing, but might if bad things happen."""
-
+    def ResolveIssue(self, irc, matched_ticket, resolution, comment):
         irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
         try:
             issue = self.jira.issue(matched_ticket.string)
@@ -141,15 +137,27 @@ class Jira(callbacks.PluginRegexp):
         for t in transitions:
             if t['to']['name'] == "Resolved":
                 try:
-                    self.jira.transition_issue(issue, t['id'], { "resolution": {"name": "Fixed"} }, comment)
+                    self.jira.transition_issue(issue, t['id'], { "resolution": {"name": resolution} }, comment)
                 except:
                     irc.reply("Cannot transition to Resolved")
                     return
                 irc.reply("Resolved successfully")
                 return
         irc.reply("No transition to Resolved state possible from the ticket.")
+
+    def resolve(self, irc, msg, args, matched_ticket, comment):
+        """<ticket> <comment> takes ticket ID-number and optionally closing comment
+
+        Should return nothing, but might if bad things happen."""
+        self.ResolveIssue(irc, matched_ticket, "Fixed", comment)
     resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
-#    resolve = wrap(resolve, ['something', 'text'])
+
+    def wontfix(self, irc, msg, args, matched_ticket, comment):
+        """<ticket> <comment> takes ticket ID-number and optionally closing comment
+
+        Should return nothing, but might if bad things happen."""
+        self.ResolveIssue(irc, matched_ticket, "Won't Fix", comment)
+    wontfix = wrap(wontfix, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
 def _b(text):
     return ircutils.bold(text)
