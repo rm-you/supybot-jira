@@ -51,6 +51,7 @@ class Jira(callbacks.PluginRegexp):
     about the ticket. It can also close and comment on Jira tasks."""
     threaded = True
     regexps = ['getIssue']
+    flags = 0
 
     def __init__(self, irc):
         self.__parent = super(Jira, self)
