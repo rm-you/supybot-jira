@@ -50,7 +50,7 @@ class Jira(callbacks.PluginRegexp):
     Jira ticket numbers, and reply with some basic information
     about the ticket. It can also close and comment on Jira tasks."""
     threaded = True
-    regexps = ['getIssue']
+    unaddressedRegexps = ['getIssue']
     flags = 0
 
     def __init__(self, irc):
