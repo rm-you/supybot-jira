@@ -45,8 +45,6 @@ except:
     # without the i18n module
     _ = lambda x:x
 
-snarfRegex = 'CLB-[0-9]+'
-
 class Jira(callbacks.PluginRegexp):
     """This plugin communicates with Jira. It will automatically snarf
     Jira ticket numbers, and reply with some basic information
