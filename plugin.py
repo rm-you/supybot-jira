@@ -163,6 +163,21 @@ class Jira(callbacks.PluginRegexp):
         self.ResolveIssue(irc, matched_ticket, "Won't Fix", comment)
     wontfix = wrap(wontfix, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
+    def gettoken(self, irc, msg, args):
+        """takes no arguments.
+
+        Requests an OAuth token for the bot so that it can act in the name of the user."""
+        
+        irc.reply("Sorry. Not implemented yet.")
+    gettoken = wrap(gettoken)
+
+    def committoken(self, irc, msg, args):
+        """takes no arguments.
+
+        Tells the bot that the requested token is fine."""
+        irc.reply("Sorry. Not implemented yet.")
+    committoken = wrap(committoken)
+
 def _b(text):
     return ircutils.bold(text)
 

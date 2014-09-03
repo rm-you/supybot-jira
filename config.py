@@ -58,6 +58,9 @@ def configure(advanced):
     snarfRegex = ''.join((snarfRegex, '-[0-9]+'))
     verifySSL = yn("""Would you like the plugin to verify your Jira instance's
             SSL certificate?""", default=False)
+    OAuthConsumerName = something("""What is the consumer name as per the Jira linked applications?""")
+    OAuthConsumerKey = something("""What is the consumer secret key as per the Jira linked applications?""")
+    OAuthConsumerSSLKey = something("""What is the filename holding the SSL key bound with the Jira trusted cert?""")
 
     Jira.server.setValue(server)
     Jira.user.setValue(user)
@@ -65,6 +68,9 @@ def configure(advanced):
     Jira.template.setValue(template)
     Jira.snarfRegex.setValue(snarfRegex)
     Jira.verifySSL.setValue(verifySSL)
+    Jira.OAuthConsumerName.setValue(OauthConsumerName)
+    Jira.OAuthConsumerKey.setValue(OauthConsumerKey)
+    Jira.OAuthConsumerSSLKey.setValue(OauthConsumerSSLKey)
 
     #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
     #                        default="JRA-[0-9]+")
@@ -85,5 +91,11 @@ conf.registerGlobalValue(Jira, 'verifySSL',
     registry.Boolean(False, _("""Verify SSL certificate for Jira instance.""")))
 conf.registerGlobalValue(Jira, 'snarfRegex', 
     registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
+conf.registerGlobalValue(Jira, 'OAuthConsumerName', 
+	registry.String('', _("""Consumer name as per the Jira linked applications.""")))
+conf.registerGlobalValue(Jira, 'OAuthConsumerKey', 
+	registry.String('', _("""Consumer secret key as per the Jira linked applications.""")))
+conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
+	registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert.""")))
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
