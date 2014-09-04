@@ -37,6 +37,9 @@ import supybot.callbacks as callbacks
 from jira.client import JIRA
 import re
 import supybot.registry as registry
+from requests_oauthlib import OAuth1
+from oauthlib.oauth1 import SIGNATURE_RSA
+import oauth2 as oauth
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -175,18 +178,38 @@ class Jira(callbacks.PluginRegexp):
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
 
-        irc.reply("Getting toekn for %s." % user,private=True, notice=False)
         try:
             usertoken = conf.supybot.plugins.Jira.tokens.get(user)
             if (force != "force"):
                 irc.reply("You seem to already have a token. Use force to get a new one.")
                 return
-            irc.reply("usertoken: %s" % usertoken)
         except:
-            irc.reply("Not gotten there")
-        
-        conf.registerGlobalValue(conf.supybot.plugins.Jira.tokens, user,
-            registry.String("xxx", "%s token" % user, private=True ))
+            pass
+
+
+        consumer_name = conf.supybot.plugins.Jira.OAuthConsumerName
+        consumer_key = conf.supybot.plugins.Jira.OAuthConsumerKey
+        request_token_url = "%s/plugins/servlet/oauth/request-token" % conf.supybot.plugins.Jira.server
+        access_token_url = "%s/plugins/servlet/oauth/access-token" % conf.supybot.plugins.Jira.server
+        authorize_url = "%s/plugins/servlet/oauth/authorize" % conf.supybot.plugins.Jira.server
+
+
+        consumer = oauth.Consumer(consumer_key, consumer_name)
+        client = oauth.Client(consumer)
+        client.set_signature_method(SignatureMethod_RSA_SHA1())
+        resp, content = client.request(request_token_url, "POST")
+        if resp['status'] != '200':
+            irc.msg("Invalid response from Jira %s: %s" % (resp['status'],  content))
+            return
+        request_token = dict(urlparse.parse_qsl(content))
+        irc.msg("Please go to %s?oauth_token=%s" % (authorize_url, request_token['oauth_token']), private=True, notice=False)
+        irc.msg("After that's done, use the bot command 'committoken'", private=True, notice=False)
+
+        usertoken = conf.registerGroup(conf.supybot.plugins.Jira.tokens, user)
+        usertoken.registerGlobalValue( "request_token",
+            registry.String(request_token['oauth_token'], "%s request token" % user, private=True ))
+        usertoken.registerGlobalValue( "request_token_secret",
+            registry.String(request_token['oauth_token_secret'], "%s request token secret" % user, private=True ))
 
         irc.reply("Sorry. Not implemented yet.")
     gettoken = wrap(gettoken, [ optional('text') ])
