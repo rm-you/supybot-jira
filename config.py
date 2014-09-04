@@ -97,5 +97,6 @@ conf.registerGlobalValue(Jira, 'OAuthConsumerKey',
 	registry.String('', _("""Consumer secret key as per the Jira linked applications.""")))
 conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
 	registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert.""")))
+conf.registerGroup(Jira, 'tokens')
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

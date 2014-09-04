@@ -36,6 +36,7 @@ import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 from jira.client import JIRA
 import re
+import supybot.registry as registry
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -163,13 +164,32 @@ class Jira(callbacks.PluginRegexp):
         self.ResolveIssue(irc, matched_ticket, "Won't Fix", comment)
     wontfix = wrap(wontfix, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
-    def gettoken(self, irc, msg, args):
-        """takes no arguments.
+    def gettoken(self, irc, msg, args, force):
+        """takes no arguments, or 'force' to override old token
 
         Requests an OAuth token for the bot so that it can act in the name of the user."""
+        if (force != None and force != "force"):
+            irc.reply("Wrong syntax.")
+            return
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+
+        irc.reply("Getting toekn for %s." % user,private=True, notice=False)
+        try:
+            usertoken = conf.supybot.plugins.Jira.tokens.get(user)
+            if (force != "force"):
+                irc.reply("You seem to already have a token. Use force to get a new one.")
+                return
+            irc.reply("usertoken: %s" % usertoken)
+        except:
+            irc.reply("Not gotten there")
         
+        conf.registerGlobalValue(conf.supybot.plugins.Jira.tokens, user,
+            registry.String("xxx", "%s token" % user, private=True ))
+
         irc.reply("Sorry. Not implemented yet.")
-    gettoken = wrap(gettoken)
+    gettoken = wrap(gettoken, [ optional('text') ])
 
     def committoken(self, irc, msg, args):
         """takes no arguments.
