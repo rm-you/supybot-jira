@@ -71,9 +71,16 @@ class Jira(callbacks.PluginRegexp):
         self.access_token_url = "%s/plugins/servlet/oauth/access-token" % self.server
         self.authorize_url = "%s/plugins/servlet/oauth/authorize" % self.server
         self.tokenstore = sqlite3.connect(self.registryValue('OAuthTokenDatabase'))
+        try:
+            self.tokenstore.execute('''CREATE TABLE tokens (user, request_token, request_token_secret, access_token, access_token_secret)''')
+        except:
+            pass
         options = { 'server': self.server, 'verify': self.verifySSL }
         auth = (self.user, self.password)
         self.jira = JIRA(options = options, basic_auth = auth)
+
+    def __del__(self):
+        self.tokenstore.close()
 
     def getIssue(self, irc, msg, match):
         """Get a Jira Issue"""
@@ -185,8 +192,11 @@ class Jira(callbacks.PluginRegexp):
         user = msg.user
 
         try:
-            usertoken = conf.supybot.plugins.Jira.tokens.get(user)
-            if (force != "force"):
+            accesstokenlist = tokenstore.execute('SELECT access_token FROM tokens WHERE user=?', (user,))
+            token = ''
+            for atoken in accesstokenlist:
+                token = 
+            if (accesstoken != '' and force != "force"):
                 irc.reply("You seem to already have a token. Use force to get a new one.")
                 return
         except:
