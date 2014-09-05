@@ -36,11 +36,9 @@ import supybot.ircutils as ircutils
 import supybot.callbacks as callbacks
 from jira.client import JIRA
 import re
-import supybot.registry as registry
-
-#import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1Session
+import sqlite3
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -66,6 +64,13 @@ class Jira(callbacks.PluginRegexp):
         self.password = self.registryValue('password')
         self.template = self.registryValue('template')
         self.verifySSL = self.registryValue('verifySSL')
+        self.consumer_name = self.registryValue('OAuthConsumerName')
+        self.consumer_key = self.registryValue('OAuthConsumerKey')
+        self.rsa_key_file = self.registryValue('OAuthConsumerSSLKey')
+        self.request_token_url = "%s/plugins/servlet/oauth/request-token" % self.server
+        self.access_token_url = "%s/plugins/servlet/oauth/access-token" % self.server
+        self.authorize_url = "%s/plugins/servlet/oauth/authorize" % self.server
+        self.tokenstore = sqlite3.connect(self.registryValue('OAuthTokenDatabase'))
         options = { 'server': self.server, 'verify': self.verifySSL }
         auth = (self.user, self.password)
         self.jira = JIRA(options = options, basic_auth = auth)
@@ -187,25 +192,19 @@ class Jira(callbacks.PluginRegexp):
         except:
             pass
 
-        consumer_name = str(conf.supybot.plugins.Jira.OAuthConsumerName)
-        consumer_key = str(conf.supybot.plugins.Jira.OAuthConsumerKey)
-        rsa_key_file = str(conf.supybot.plugins.Jira.OAuthConsumerSSLKey)
-        request_token_url = "%s/plugins/servlet/oauth/request-token" % conf.supybot.plugins.Jira.server
-        access_token_url = "%s/plugins/servlet/oauth/access-token" % conf.supybot.plugins.Jira.server
-        authorize_url = "%s/plugins/servlet/oauth/authorize" % conf.supybot.plugins.Jira.server
         try:
-            f = open(rsa_key_file)
+            f = open(self.rsa_key_file)
             rsa_key = f.read()
         except:
             print "Cannot access the rsa key file %s" % rsa_key_file
             irc.reply("Internal bot error, can't find Jira cert")
             return
 
-        oauth = OAuth1Session(consumer_key, signature_type='auth_header', 
+        oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
                               signature_method=SIGNATURE_RSA, rsa_key=rsa_key)
-        request_token = oauth.fetch_request_token(request_token_url)
+        request_token = oauth.fetch_request_token(self.request_token_url)
 
-        irc.reply("Please go to %s?oauth_token=%s" % (authorize_url, request_token['oauth_token']), private=True, notice=False)
+        irc.reply("Please go to %s?oauth_token=%s" % (self.authorize_url, request_token['oauth_token']), private=True, notice=False)
         irc.reply("After that's done, use the bot command 'committoken'", private=True, notice=False)
 
         usertoken = conf.registerGroup(conf.supybot.plugins.Jira.tokens, user)
