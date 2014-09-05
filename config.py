@@ -92,11 +92,11 @@ conf.registerGlobalValue(Jira, 'verifySSL',
 conf.registerGlobalValue(Jira, 'snarfRegex', 
     registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
 conf.registerGlobalValue(Jira, 'OAuthConsumerName', 
-	registry.String('', _("""Consumer name as per the Jira linked applications.""")))
+	registry.String('', _("""Consumer name as per the Jira linked applications."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerKey', 
-	registry.String('', _("""Consumer secret key as per the Jira linked applications.""")))
+	registry.String('', _("""Consumer secret key as per the Jira linked applications."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
-	registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert.""")))
+	registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert."""), private=True))
 conf.registerGroup(Jira, 'tokens')
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
