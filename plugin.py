@@ -87,8 +87,28 @@ class Jira(callbacks.PluginRegexp):
             self.tokens = dict()
 
         options = { 'server': self.server, 'verify': self.verifySSL }
-        auth = (self.user, self.password)
-        self.jira = JIRA(options = options, basic_auth = auth)
+        self.jira = dict()
+        try:
+            oauth_dict = {
+                'access_token': self.tokens[self.user]['access']['oauth_token'],
+                'access_token_secret': self.tokens[self.user]['access']['oauth_token_secret'],
+                'consumer_key': self.consumer_key,
+                'key_cert': self.rsa_key
+            }
+            self.jira[self.user] = JIRA(options = options, oauth = oauth_dict)
+        except:
+            auth = (self.user, self.password)
+            self.jira[self.user] = JIRA(options = options, basic_auth = auth)
+
+    def establishConnection(self, user):
+        options = { 'server': self.server, 'verify': self.verifySSL }
+        oauth_dict = {
+           'access_token': self.tokens[user]['access']['oauth_token'],
+           'access_token_secret': self.tokens[user]['access']['oauth_token_secret'],
+           'consumer_key': self.consumer_key,
+           'key_cert': self.rsa_key
+        }
+        self.jira[user] = JIRA(options = options, oauth = oauth_dict)
 
     def getIssue(self, irc, msg, match):
         """Get a Jira Issue"""
@@ -96,7 +116,7 @@ class Jira(callbacks.PluginRegexp):
             return
         issueName = match.group('issue')
         try:
-            issue = self.jira.issue(issueName)
+            issue = self.jira[self.user].issue(issueName)
         except:
             irc.reply("cannot find %s bug" % issueName, action=True)
             print "Invalid Jira snarf: %s" % issueName
@@ -136,8 +156,17 @@ class Jira(callbacks.PluginRegexp):
 
         Should return nothing, but might if bad things happen."""
 
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token")
+                return
+
         try:
-            if self.jira.add_comment(matched_ticket.string, comment):
+            if self.jira[user].add_comment(matched_ticket.string, comment):
                 irc.reply("OK")
         except:
             irc.reply("cannot comment")
