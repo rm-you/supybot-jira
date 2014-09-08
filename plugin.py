@@ -162,7 +162,7 @@ class Jira(callbacks.PluginRegexp):
             try:
                 self.establishConnection(user)
             except:
-                irc.reply("Cannot establish connection. Probably invalid or no token")
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
                 return
 
         try:
@@ -174,10 +174,17 @@ class Jira(callbacks.PluginRegexp):
             return
     comment = wrap(comment, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
 
-    def ResolveIssue(self, irc, matched_ticket, resolution, comment):
+    def ResolveIssue(self, irc, msg, matched_ticket, resolution, comment):
         irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
         try:
-            issue = self.jira.issue(matched_ticket.string)
+            issue = self.jira[user].issue(matched_ticket.string)
         except:
             irc.reply("cannot find %s bug" % matched_ticket.string, action=True)
             print "Invalid Jira snarf: %s" % matched_ticket.string
@@ -188,14 +195,14 @@ class Jira(callbacks.PluginRegexp):
             return
 
         try:
-            transitions = self.jira.transitions(issue)
+            transitions = self.jira[user].transitions(issue)
         except:
             irc.reply("cannot get transitions states")
             return
         for t in transitions:
             if t['to']['name'] == "Resolved":
                 try:
-                    self.jira.transition_issue(issue, t['id'], { "resolution": {"name": resolution} }, comment)
+                    self.jira[user].transition_issue(issue, t['id'], { "resolution": {"name": resolution} }, comment)
                 except:
                     irc.reply("Cannot transition to Resolved")
                     return
@@ -207,14 +214,14 @@ class Jira(callbacks.PluginRegexp):
         """<ticket> <comment> takes ticket ID-number and optionally closing comment
 
         Should return nothing, but might if bad things happen."""
-        self.ResolveIssue(irc, matched_ticket, "Fixed", comment)
+        self.ResolveIssue(irc, msg, matched_ticket, "Fixed", comment)
     resolve = wrap(resolve, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
     def wontfix(self, irc, msg, args, matched_ticket, comment):
         """<ticket> <comment> takes ticket ID-number and optionally closing comment
 
         Should return nothing, but might if bad things happen."""
-        self.ResolveIssue(irc, matched_ticket, "Won't Fix", comment)
+        self.ResolveIssue(irc, msg, matched_ticket, "Won't Fix", comment)
     wontfix = wrap(wontfix, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
     def gettoken(self, irc, msg, args, force):
