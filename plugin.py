@@ -38,7 +38,8 @@ from jira.client import JIRA
 import re
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1Session
-import sqlite3
+import yaml
+import os
 
 try:
     from supybot.i18n import PluginInternationalization
@@ -70,17 +71,24 @@ class Jira(callbacks.PluginRegexp):
         self.request_token_url = "%s/plugins/servlet/oauth/request-token" % self.server
         self.access_token_url = "%s/plugins/servlet/oauth/access-token" % self.server
         self.authorize_url = "%s/plugins/servlet/oauth/authorize" % self.server
-        self.tokenstore = sqlite3.connect(self.registryValue('OAuthTokenDatabase'))
+        self.tokenstore = self.registryValue('OAuthTokenDatabase')
         try:
-            self.tokenstore.execute('''CREATE TABLE tokens (user, request_token, request_token_secret, access_token, access_token_secret)''')
+            f = open(self.rsa_key_file)
+            self.rsa_key = f.read()
+            f.close()
         except:
-            pass
+            print "Cannot access the rsa key file %s" % rsa_key_file
+            return
+        try:
+            f = open(self.tokenstore)
+            self.tokens = yaml.load(f)
+            f.close()
+        except:
+            self.tokens = dict()
+
         options = { 'server': self.server, 'verify': self.verifySSL }
         auth = (self.user, self.password)
         self.jira = JIRA(options = options, basic_auth = auth)
-
-    def __del__(self):
-        self.tokenstore.close()
 
     def getIssue(self, irc, msg, match):
         """Get a Jira Issue"""
@@ -192,44 +200,58 @@ class Jira(callbacks.PluginRegexp):
         user = msg.user
 
         try:
-            accesstokenlist = tokenstore.execute('SELECT access_token FROM tokens WHERE user=?', (user,))
-            token = ''
-            for atoken in accesstokenlist:
-                token = 
-            if (accesstoken != '' and force != "force"):
+            if (self.tokens[user].has_key('access_key') and force != "force"):
                 irc.reply("You seem to already have a token. Use force to get a new one.")
                 return
+            if (self.tokens[user].has_key('request_key') and force != "force"):
+                irc.reply("You have requested a token already. If you accepted access to Jira, use 'committoken' Use 'gettoken force' to request a new token.",private=True,notice=False)
+                return
         except:
-            pass
-
-        try:
-            f = open(self.rsa_key_file)
-            rsa_key = f.read()
-        except:
-            print "Cannot access the rsa key file %s" % rsa_key_file
-            irc.reply("Internal bot error, can't find Jira cert")
-            return
+            self.tokens[user] = dict()
+            self.tokens[user]['request'] = dict()
 
         oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
-                              signature_method=SIGNATURE_RSA, rsa_key=rsa_key)
+                              signature_method=SIGNATURE_RSA, rsa_key=self.rsa_key)
         request_token = oauth.fetch_request_token(self.request_token_url)
 
         irc.reply("Please go to %s?oauth_token=%s" % (self.authorize_url, request_token['oauth_token']), private=True, notice=False)
         irc.reply("After that's done, use the bot command 'committoken'", private=True, notice=False)
 
-        usertoken = conf.registerGroup(conf.supybot.plugins.Jira.tokens, user)
-        usertoken.register( "request_token",
-            registry.String(request_token['oauth_token'], "%s request token" % user, private=True ))
-        usertoken.register( "request_token_secret",
-            registry.String(request_token['oauth_token_secret'], "%s request token secret" % user, private=True ))
+        self.tokens[user]['request'] = request_token
+
+        f = file("%s.new" % self.tokenstore,'w')
+        yaml.dump(self.tokens, f, default_flow_style=False)
+        os.rename("%s.new" % self.tokenstore, self.tokenstore)
 
     gettoken = wrap(gettoken, [ optional('text') ])
 
     def committoken(self, irc, msg, args):
         """takes no arguments.
 
-        Tells the bot that the requested token is fine."""
-        irc.reply("Sorry. Not implemented yet.")
+        Tells the bot that the requested token is accepted."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+
+        try:
+            if ( self.tokens[user].has_key('request') != True):
+                irc.reply("No request token found. You need to first request a token with 'gettoken'.",private=True,notice=False)
+                return
+        except:
+            irc.reply("No request token found. You need to first request a token with 'gettoken'.",private=True,notice=False)
+            return
+
+        oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
+                              signature_method=SIGNATURE_RSA, rsa_key=self.rsa_key)
+        oauth._populate_attributes(self.tokens[user]['request'])
+        self.tokens[user]['access'] = oauth.fetch_access_token(self.access_token_url)
+
+        irc.reply("Looks good", private=True, notice=False)
+
+        f = file("%s.new" % self.tokenstore,'w')
+        yaml.dump(self.tokens, f, default_flow_style=False)
+        os.rename("%s.new" % self.tokenstore, self.tokenstore)
+
     committoken = wrap(committoken)
 
 def _b(text):
