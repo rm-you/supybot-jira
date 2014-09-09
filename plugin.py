@@ -285,6 +285,50 @@ class Jira(callbacks.PluginRegexp):
 
     gettoken = wrap(gettoken, [ optional('text') ])
 
+    def create(self, irc, msg, args, matched_proj, issuetype, title):
+        """<project> <issue type> <title>
+
+        Creates a new issue in Jira. Should print out the issue number."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+        try:
+            newissue = self.jira[user].create_issue(project={'key': matched_proj.string}, summary=title, issuetype={'name': issuetype})
+            irc.reply("OK. %s created." % newissue.key)
+        except:
+            irc.reply("Cannot create issue. Check the type %s is valid for the project." % issuetype)
+            print "Cannot comment on: %s" % matched_ticket.string
+            return
+    create = wrap(create, [('matches', re.compile('^[A-Z]+$'), "The first argument should be the project abbrev like JRA, but it doesn't match the pattern."), 'something', 'text'])
+
+    def describe(self, irc, msg, args, matched_proj, text):
+        """<project> <issue> <description>
+
+        Replaces the description of the issue."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+        try:
+            issue = self.jira[user].issue(matched_proj.string)
+            issue.update(description = text)
+            irc.reply("OK. Description changed.")
+        except:
+            irc.reply("Cannot change issue description.")
+            return
+    describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the project abbrev like JRA, but it doesn't match the pattern."), 'text'])
+
     def committoken(self, irc, msg, args):
         """takes no arguments.
 
