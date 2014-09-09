@@ -174,6 +174,45 @@ class Jira(callbacks.PluginRegexp):
             return
     comment = wrap(comment, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
 
+    def status(self, irc, msg, args, matched_ticket, newstatus):
+        """<ticket> <new status>
+
+        Changes the status of the ticket to the requested one."""
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+        try:
+            issue = self.jira[user].issue(matched_ticket.string)
+        except:
+            irc.reply("cannot find %s bug" % matched_ticket.string, action=True)
+            print "Invalid Jira snarf: %s" % matched_ticket.string
+            return
+
+        if issue.fields.status.name == newstatus:
+            irc.reply("Too late! The %s issue is already in the requested status." % matched_ticket.string)
+            return
+
+        try:
+            transitions = self.jira[user].transitions(issue)
+        except:
+            irc.reply("cannot get transitions states")
+            return
+        for t in transitions:
+            if t['to']['name'] == newstatus:
+                try:
+                    self.jira[user].transition_issue(issue, t['id'])
+                except:
+                    irc.reply("Cannot transition to %s." % newstatus)
+                    return
+                irc.reply("%s successfully changed state to %s" % (matched_ticket.string, newstatus) )
+                return
+        irc.reply("No transition to %s state possible from the ticket." % newstatus)
+    status = wrap(status, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
+
     def ResolveIssue(self, irc, msg, matched_ticket, resolution, comment):
         irc.reply("attempts to close issue %s." % matched_ticket.string, action=True)
         user = msg.user
