@@ -225,9 +225,9 @@ class Jira(callbacks.PluginRegexp):
     wontfix = wrap(wontfix, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('text')])
 
     def assign(self, irc, msg, args, matched_ticket, assignee):
-        """<ticket> <comment> takes ticket ID-number and the comment
+        """<ticket> <assginee>
 
-        Should return nothing, but might if bad things happen."""
+        Assignes the issue to the given user ID. If no user ID is given, it is assigned to the requester."""
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
@@ -237,15 +237,16 @@ class Jira(callbacks.PluginRegexp):
             except:
                 irc.reply("Cannot establish connection. Probably invalid or no token.")
                 return
-
+        if (assignee is None):
+            assignee = user
         try:
             self.jira[user].assign_issue(matched_ticket.string, assignee)
-            irc.reply("Issue assgined")
+            irc.reply("Issue %s assgined to %s" % (matched_ticket.string, assignee) )
         except:
-            irc.reply("Cannot assign")
+            irc.reply("Cannot assign %s to %s" % (matched_ticket.string, assignee) )
             print "Cannot assign %s to %s" % (matched_ticket.string, assignee)
             return
-    assign = wrap(assign, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'somethingWithoutSpaces'])
+    assign = wrap(assign, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('somethingWithoutSpaces')])
 
     def gettoken(self, irc, msg, args, force):
         """takes no arguments, or 'force' to override old token
