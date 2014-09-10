@@ -114,6 +114,8 @@ class Jira(callbacks.PluginRegexp):
         """Get a Jira Issue"""
         if not ircutils.isChannel(msg.args[0]):
             return
+        if conf.get(conf.supybot.plugins.Jira.lookup, msg.args[0]) == False:
+            return
         issueName = match.group('issue')
         try:
             issue = self.jira[self.user].issue(issueName)

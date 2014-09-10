@@ -53,6 +53,7 @@ def configure(advanced):
     password = something("""What is the password for the Jira user?""")
     template = something("""What output template would you like?""",
             default=template)
+    lookup = yn("""Do you want to lookup Jira issues once they appear on a channel?""", default=True)
     snarfRegex = something("""What is the prefix for your Jira issue keys?""",
             default="CLB")
     snarfRegex = ''.join((snarfRegex, '-[0-9]+'))
@@ -67,6 +68,7 @@ def configure(advanced):
     Jira.user.setValue(user)
     Jira.password.setValue(password)
     Jira.template.setValue(template)
+    Jira.lookup.setValue(lookup)
     Jira.snarfRegex.setValue(snarfRegex)
     Jira.verifySSL.setValue(verifySSL)
     Jira.OAuthConsumerName.setValue(OauthConsumerName)
@@ -90,6 +92,8 @@ conf.registerGlobalValue(Jira, 'template',
         _("""Template for the plugin's output formatting.""")))
 conf.registerGlobalValue(Jira, 'verifySSL',
     registry.Boolean(False, _("""Verify SSL certificate for Jira instance.""")))
+conf.registerChannelValue(Jira, 'lookup',
+    registry.Boolean(True, _("""Lookup Jira issues and print on the channel.""")))
 conf.registerGlobalValue(Jira, 'snarfRegex', 
     registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
 conf.registerGlobalValue(Jira, 'OAuthConsumerName', 
