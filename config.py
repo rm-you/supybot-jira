@@ -62,7 +62,7 @@ def configure(advanced):
     OAuthConsumerName = something("""What is the consumer name as per the Jira linked applications?""")
     OAuthConsumerKey = something("""What is the consumer secret key as per the Jira linked applications?""")
     OAuthConsumerSSLKey = something("""What is the filename holding the SSL key bound with the Jira trusted cert?""")
-    OAuthTokenDatabase = something("""What is the filename holding the sqlite3 database with OAuth tokens?""")
+    OAuthTokenDatabase = something("""What is the filename holding the yaml structure with OAuth tokens?""")
 
     Jira.server.setValue(server)
     Jira.user.setValue(user)
@@ -97,12 +97,13 @@ conf.registerChannelValue(Jira, 'lookup',
 conf.registerGlobalValue(Jira, 'snarfRegex', 
     registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
 conf.registerGlobalValue(Jira, 'OAuthConsumerName', 
-	registry.String('', _("""Consumer name as per the Jira linked applications."""), private=True))
+    registry.String('', _("""Consumer name as per the Jira linked applications."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerKey', 
-	registry.String('', _("""Consumer secret key as per the Jira linked applications."""), private=True))
+    registry.String('', _("""Consumer secret key as per the Jira linked applications."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
-	registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert."""), private=True))
+    registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthTokenDatabase', 
-	registry.String('tokens.sqlite3', _("""Filename holding the sqlite3 database with user tokens."""), private=True))
+    registry.String('tokens.yaml', _("""Filename holding the yaml structure with user tokens."""), private=True))
+
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:
