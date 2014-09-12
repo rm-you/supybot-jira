@@ -282,7 +282,7 @@ class Jira(callbacks.PluginRegexp):
             assignee = user
         try:
             self.jira[user].assign_issue(matched_ticket.string, assignee)
-            irc.reply("Issue %s assgined to %s" % (matched_ticket.string, assignee) )
+            irc.reply("Issue %s assigned to %s" % (matched_ticket.string, assignee) )
         except:
             irc.reply("Cannot assign %s to %s" % (matched_ticket.string, assignee) )
             print "Cannot assign %s to %s" % (matched_ticket.string, assignee)
