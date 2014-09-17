@@ -348,8 +348,8 @@ class Jira(callbacks.PluginRegexp):
             return
     create = wrap(create, [('matches', re.compile('^[A-Z]+$'), "The first argument should be the project abbrev like JRA, but it doesn't match the pattern."), 'something', 'text'])
 
-    def describe(self, irc, msg, args, matched_proj, text):
-        """<project> <issue> <description>
+    def describe(self, irc, msg, args, matched_ticket, text):
+        """<issue> <description>
 
         Replaces the description of the issue."""
 
@@ -362,13 +362,13 @@ class Jira(callbacks.PluginRegexp):
                 irc.reply("Cannot establish connection. Probably invalid or no token.")
                 return
         try:
-            issue = self.jira[user].issue(matched_proj.string)
+            issue = self.jira[user].issue(matched_ticket.string)
             issue.update(description = text)
             irc.reply("OK. Description changed.")
         except:
             irc.reply("Cannot change issue description.")
             return
-    describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the project abbrev like JRA, but it doesn't match the pattern."), 'text'])
+    describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), 'text'])
 
     def committoken(self, irc, msg, args):
         """takes no arguments.
