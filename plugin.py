@@ -329,6 +329,91 @@ class Jira(callbacks.PluginRegexp):
             return
     describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), 'text'])
 
+    def watch(self, irc, msg, args, matched_ticket):
+        """<issue>
+
+        Adds the requester to the watchers list."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+
+        try:
+            self.jira[user].add_watcher(issue = matched_ticket.string, watcher = user)
+            irc.reply("OK. Watchers list modifed.")
+        except Exception as detail:
+            irc.reply("Cannot modfidy the watchers list. Error: %s." % detail)
+            return
+    watch = wrap(watch, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern.")])
+
+    def unwatch(self, irc, msg, args, matched_ticket):
+        """<issue>
+
+        Removes the requestor from the watchers list."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+
+        try:
+            self.jira[user].remove_watcher(issue = matched_ticket.string, watcher = user)
+            irc.reply("OK. Watchers list modified.")
+        except Exception as detail:
+            irc.reply("Cannot change the watchers list. Error: %s." %detail)
+            return
+    unwatch = wrap(unwatch, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern.")])
+
+    def gettoken(self, irc, msg, args, force):
+        """
+
+        Requests an OAuth token for the bot so that it can act in the name of the user."""
+        if (force != None and force != "force"):
+            irc.reply("Wrong syntax.")
+            return
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+
+        try:
+            if (self.tokens[user].has_key('access_key') and force != "force"):
+                irc.reply("You seem to already have a token. Use force to get a new one.")
+                return
+            if (self.tokens[user].has_key('request_key') and force != "force"):
+                irc.reply("You have requested a token already. If you accepted access to Jira, use 'committoken' Use 'gettoken force' to request a new token.",private=True,notice=False)
+                return
+        except:
+            self.tokens[user] = dict()
+            self.tokens[user]['request'] = dict()
+
+        oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
+                              signature_method=SIGNATURE_RSA, rsa_key=self.rsa_key)
+        try:
+            request_token = oauth.fetch_request_token(self.request_token_url)
+        except Exception as detail:
+            irc.reply("Error occurred while getting token: %s." %detail)
+            return
+
+        irc.reply("Please go to %s?oauth_token=%s" % (self.authorize_url, request_token['oauth_token']), private=True, notice=False)
+        irc.reply("After that's done, use the bot command 'committoken'", private=True, notice=False)
+
+        self.tokens[user]['request'] = request_token
+
+        f = file("%s.new" % self.tokenstore,'w')
+        yaml.dump(self.tokens, f, default_flow_style=False)
+        os.rename("%s.new" % self.tokenstore, self.tokenstore)
+
+    gettoken = wrap(gettoken, [ optional('text') ])
+
     def committoken(self, irc, msg, args):
         """takes no arguments.
 
