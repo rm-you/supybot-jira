@@ -329,6 +329,29 @@ class Jira(callbacks.PluginRegexp):
             return
     describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), 'text'])
 
+    def priority(self, irc, msg, args, matched_ticket, prio):
+        """<issue> <priority>
+
+        Sets the priority on the ticket."""
+
+        #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+        try:
+            issue = self.jira[user].issue(matched_ticket.string)
+            issue.update(priority = { 'id' : str(prio) })
+            irc.reply("OK. Priority changed.")
+        except Exception as detail:
+            irc.reply("Cannot change issue priority. Error %s." % detail)
+            return
+
+    priority = wrap(priority, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), 'int'])
+
     def watch(self, irc, msg, args, matched_ticket):
         """<issue>
 
