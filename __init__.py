@@ -51,7 +51,7 @@ __contributors__ = { "create": supybot.Author('Bolesław Tokarski', 'ballock', '
                    }
 
 # This is a url where the most recent plugin package can be downloaded.
-__url__ = 'https://github.com/ballock/supybot-jira'
+__url__ = 'https://github.com/rm-you/supybot-jira'
 
 from . import config
 from . import plugin

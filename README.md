@@ -2,12 +2,10 @@ supybot-jira
 ============
 
 Jira REST API issue plugin for supybot / Limnoria.<br />
-The plugin can show the issue summary based on regexp, it can also do a subset of commands on Jira, like commenting on an issue
-or resolving an issue.<br />
+The plugin can show the issue summary based on regexp, it can also do a subset of commands on Jira, like commenting on an issue or resolving an issue.<br />
 NOTE: This controlling part currently requires OAuth access, so it requires you to be able to link bot as a Jira linked application.
-Also, it does not perform user verification so it's not only insecure, but unusable on public networks, unless you control
-the ident user values of people connecting to the server. Both these can be fixed of cource (TODO).<br />
-There also exists a similarly named project by zhangsen, but it appears to be unmaintained for the last year, and uses the now unsupported SOAP API. This one is a fork or continuation of rm-you.<br />
+Also, it does not perform user verification so it's not only insecure, but unusable on public networks, unless you control the ident user values of people connecting to the server. Both these can be fixed of cource (TODO).<br />
+There also exists a similarly named project by zhangsen, but it appears to be unmaintained for the last year, and uses the now unsupported SOAP API.<br />
 
 <b>Requirements:</b>
 ```
@@ -49,7 +47,7 @@ The default output looks like this:<br />
 <supybot> (Story JRA-123) Add Pagination [ Philip Fry ] Ready For Test https://jira.mysite.com/browse/JRA-123
 ```
 
-Once you set up linekd application in Jira, you can perform this kind of chat with supybot (private chat):
+Once you set up linked application in Jira, you can perform this kind of chat with supybot (private chat):
 ```
 <user> comment JRA-123 My new comment.
 <supybot> Cannot establish connection. Probably invalid or no token.
