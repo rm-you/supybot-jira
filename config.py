@@ -53,18 +53,27 @@ def configure(advanced):
     password = something("""What is the password for the Jira user?""")
     template = something("""What output template would you like?""",
             default=template)
+    lookup = yn("""Do you want to lookup Jira issues once they appear on a channel?""", default=True)
     snarfRegex = something("""What is the prefix for your Jira issue keys?""",
             default="CLB")
     snarfRegex = ''.join((snarfRegex, '-[0-9]+'))
     verifySSL = yn("""Would you like the plugin to verify your Jira instance's
             SSL certificate?""", default=False)
+    OAuthConsumerName = something("""What is the consumer name as per the Jira linked applications?""")
+    OAuthConsumerKey = something("""What is the consumer secret key as per the Jira linked applications?""")
+    OAuthConsumerSSLKey = something("""What is the filename holding the SSL key bound with the Jira trusted cert?""")
+    OAuthTokenDatabase = something("""What is the filename holding the yaml structure with OAuth tokens?""")
 
     Jira.server.setValue(server)
     Jira.user.setValue(user)
     Jira.password.setValue(password)
     Jira.template.setValue(template)
+    Jira.lookup.setValue(lookup)
     Jira.snarfRegex.setValue(snarfRegex)
     Jira.verifySSL.setValue(verifySSL)
+    Jira.OAuthConsumerName.setValue(OauthConsumerName)
+    Jira.OAuthConsumerKey.setValue(OauthConsumerKey)
+    Jira.OAuthTokenDatabase.setValue(OauthTokenDatabase)
 
     #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
     #                        default="JRA-[0-9]+")
@@ -83,7 +92,18 @@ conf.registerGlobalValue(Jira, 'template',
         _("""Template for the plugin's output formatting.""")))
 conf.registerGlobalValue(Jira, 'verifySSL',
     registry.Boolean(False, _("""Verify SSL certificate for Jira instance.""")))
+conf.registerChannelValue(Jira, 'lookup',
+    registry.Boolean(True, _("""Lookup Jira issues and print on the channel.""")))
 conf.registerGlobalValue(Jira, 'snarfRegex', 
     registry.String('JRA-[0-9]+', _("""Regex for Jira ticket ID snarfing.""")))
+conf.registerGlobalValue(Jira, 'OAuthConsumerName', 
+    registry.String('', _("""Consumer name as per the Jira linked applications."""), private=True))
+conf.registerGlobalValue(Jira, 'OAuthConsumerKey', 
+    registry.String('', _("""Consumer secret key as per the Jira linked applications."""), private=True))
+conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
+    registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert."""), private=True))
+conf.registerGlobalValue(Jira, 'OAuthTokenDatabase', 
+    registry.String('tokens.yaml', _("""Filename holding the yaml structure with user tokens."""), private=True))
+
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

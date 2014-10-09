@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ###
 # Copyright (c) 2013, Adam Harwell
 # All rights reserved.
@@ -38,17 +39,19 @@ import supybot.world as world
 
 # Use this for the version of this plugin.  You may wish to put a CVS keyword
 # in here if you're keeping the plugin in CVS or some similar system.
-__version__ = "0.1"
+__version__ = "0.2"
 
 # XXX Replace this with an appropriate author or supybot.Author instance.
 __author__ = supybot.Author('Adam Harwell', 'rm_you', 'adam.harwell@rackspace.com')
 
 # This is a dictionary mapping supybot.Author instances to lists of
 # contributions.
-__contributors__ = {}
+__contributors__ = { "create": supybot.Author('Bolesław Tokarski', 'ballock', 'boleslaw.tokarski@opera.com'),
+                     "resolve": supybot.Author('Bolesław Tokarski', 'ballock', 'boleslaw.tokarski@opera.com'),
+                   }
 
 # This is a url where the most recent plugin package can be downloaded.
-__url__ = '' # 'http://supybot.com/Members/yourname/Jira/download'
+__url__ = 'https://github.com/ballock/supybot-jira'
 
 from . import config
 from . import plugin
