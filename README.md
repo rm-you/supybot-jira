@@ -30,9 +30,10 @@ supybot.plugins.Jira.snarfRegex        = The regular expression used for snarfin
                                          When setting this from within IRC, you will probably need to use double-quotes 
                                          or the bot will fail to handle your input.
                                          (ex: "(?:(?<=\\s)|^)[A-Z]+-[0-9]+(?:(?=[\\s.?!,])|$) - Capital letters dash numbers")
-supybot.plugins.Jira.OauthConsumerName = The Consumer Name use in Jira linked applications
-supybot.plugins.Jira.OauthConsumerKey  = The Consumer Key use in Jira linked applications
-supybot.plugins.Jira.TokenDatabase     = Filename that stores yaml-based user tokens for Jira OAuth
+supybot.plugins.Jira.OAuthConsumerName = The Consumer Name use in Jira linked applications
+supybot.plugins.Jira.OAuthConsumerKey  = The Consumer Key use in Jira linked applications
+supybot.plugins.Jira.OAuthConsumerSSLKey    = The RSA Private Key use for handling tokens
+supybot.plugins.Jira.OAuthTokenDatabase     = Filename that stores yaml-based user tokens for Jira OAuth
 ```
 
 For linking Jira with supybot see https://confluence.atlassian.com/display/JIRA/Linking+to+Another+Application
