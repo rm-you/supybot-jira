@@ -77,8 +77,8 @@ class Jira(callbacks.PluginRegexp):
             self.rsa_key = f.read()
             f.close()
         except:
-            print "Cannot access the rsa key file %s" % rsa_key_file
-            return
+            print "Cannot access the rsa key file %s" % self.rsa_key_file
+            self.rsa_key = None
         try:
             f = open(self.tokenstore)
             self.tokens = yaml.load(f)
@@ -145,7 +145,7 @@ class Jira(callbacks.PluginRegexp):
                         "key": issue.key,
                         "summary": issue.fields.summary,
                         "status": _c(_b(issue.fields.status.name), "green"),
-                        "assignee": _c(assignee, "light blue"),
+                        "assignee": _c(assignee, "blue"),
                         "displayTime": displayTime,
                         "url": url,
                     }
