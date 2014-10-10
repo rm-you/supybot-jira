@@ -55,12 +55,13 @@ def configure(advanced):
             default=template)
     lookup = yn("""Do you want to lookup Jira issues once they appear on a channel?""", default=True)
     snarfRegex = something("""What is the prefix for your Jira issue keys?""",
-            default="CLB")
+            default="JRA")
     snarfRegex = ''.join((snarfRegex, '-[0-9]+'))
     verifySSL = yn("""Would you like the plugin to verify your Jira instance's
             SSL certificate?""", default=False)
     OAuthConsumerName = something("""What is the consumer name as per the Jira linked applications?""")
     OAuthConsumerKey = something("""What is the consumer secret key as per the Jira linked applications?""")
+    OAuthVerifier = something("""What is the consumer verifier string for Jira OAuth?""", default=u'none')
     OAuthConsumerSSLKey = something("""What is the filename holding the SSL key bound with the Jira trusted cert?""")
     OAuthTokenDatabase = something("""What is the filename holding the yaml structure with OAuth tokens?""")
 
@@ -73,6 +74,7 @@ def configure(advanced):
     Jira.verifySSL.setValue(verifySSL)
     Jira.OAuthConsumerName.setValue(OauthConsumerName)
     Jira.OAuthConsumerKey.setValue(OauthConsumerKey)
+    Jira.OAuthVerifier.setValue(OauthVerifier)
     Jira.OAuthTokenDatabase.setValue(OauthTokenDatabase)
 
     #snarfRegex = expect("""What is the regex for your Jira ticket IDs?""", 
@@ -100,6 +102,8 @@ conf.registerGlobalValue(Jira, 'OAuthConsumerName',
     registry.String('', _("""Consumer name as per the Jira linked applications."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerKey', 
     registry.String('', _("""Consumer secret key as per the Jira linked applications."""), private=True))
+conf.registerGlobalValue(Jira, 'OAuthVerifier', 
+    registry.String('', _("""Consumer verification string for Jira OAuth."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthConsumerSSLKey', 
     registry.String('', _("""Filename holding the SSL key bound with the Jira trusted cert."""), private=True))
 conf.registerGlobalValue(Jira, 'OAuthTokenDatabase', 

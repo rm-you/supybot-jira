@@ -49,6 +49,18 @@ except:
     # without the i18n module
     _ = lambda x:x
 
+
+class OAuth1SessionNoVerify(OAuth1Session):
+    def __init__(self, *args, **kwargs):
+        self._old_post = self.post
+        self.post = self._my_post
+        self._verifySSL = kwargs.pop('verify', True)
+        super(OAuth1SessionNoVerify, self).__init__(*args, **kwargs)
+
+    def _my_post(self, url):
+        return self._old_post(url, verify=self._verifySSL)
+
+
 class Jira(callbacks.PluginRegexp):
     """This plugin communicates with Jira. It will automatically snarf
     Jira ticket numbers, and reply with some basic information
@@ -67,6 +79,7 @@ class Jira(callbacks.PluginRegexp):
         self.verifySSL = self.registryValue('verifySSL')
         self.consumer_name = self.registryValue('OAuthConsumerName')
         self.consumer_key = self.registryValue('OAuthConsumerKey')
+        self.oauth_verifier = self.registryValue('OAuthVerifier')
         self.rsa_key_file = self.registryValue('OAuthConsumerSSLKey')
         self.request_token_url = "%s/plugins/servlet/oauth/request-token" % self.server
         self.access_token_url = "%s/plugins/servlet/oauth/access-token" % self.server
@@ -419,8 +432,13 @@ class Jira(callbacks.PluginRegexp):
             self.tokens[user] = dict()
             self.tokens[user]['request'] = dict()
 
-        oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
-                              signature_method=SIGNATURE_RSA, rsa_key=self.rsa_key)
+        oauth = OAuth1SessionNoVerify(
+                    self.consumer_key,
+                    signature_type='auth_header',
+                    signature_method=SIGNATURE_RSA,
+                    rsa_key=self.rsa_key,
+                    verify=self.verifySSL
+                )
         try:
             request_token = oauth.fetch_request_token(self.request_token_url)
         except Exception as detail:
@@ -454,8 +472,14 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("No request token found. You need to first request a token with 'gettoken'.",private=True,notice=False)
             return
 
-        oauth = OAuth1Session(self.consumer_key, signature_type='auth_header', 
-                              signature_method=SIGNATURE_RSA, rsa_key=self.rsa_key)
+        oauth = OAuth1SessionNoVerify(
+                    self.consumer_key,
+                    signature_type='auth_header',
+                    signature_method=SIGNATURE_RSA,
+                    rsa_key=self.rsa_key,
+                    verifier=self.oauth_verifier,
+                    verify=self.verifySSL
+                )
         oauth._populate_attributes(self.tokens[user]['request'])
 
         try:
