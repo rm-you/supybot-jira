@@ -47,6 +47,12 @@ The default output looks like this:<br />
 <supybot> (Story JRA-123) Add Pagination [ Philip Fry ] Ready For Test https://jira.mysite.com/browse/JRA-123
 ```
 
+You can also search for issues, which will return a '||' separated list of issues with matching summaries:
+```
+<user> supybot: issues Pagination
+<supybot> (Story JRA-123) Add Pagination [ Philip Fry ] Ready For Test || (Story JRA-456) Add Pagination to Docbook [ Unassigned ] To Do
+```
+
 ## Using OAuth Features
 This is a bit complicated, and the JIRA docs aren't especially useful. If you'd like to read them, they're available here:  https://confluence.atlassian.com/display/JIRA/Linking+to+Another+Application
 
@@ -74,6 +80,24 @@ Once you set up linked application in Jira, you can perform this kind of chat wi
 * pybot attempts to close issue JRA-123
 <pybot> user: Resolved successfully
 ```
+
+Full list of commands (all of which besides "issue(s)" require OAuth):
+* issue <issue> - Displays an issue, the same as a default snarfed response
+* issues <searchtext> - Returns a list of Jira issues with matching summaries
+* comment <issue> <comment> - Comments on a given issue
+* status <issue> <status> - Changes the status of an issue
+* resolve <issue> [<comment>] - Resolves an issue, with optional comment
+* wontfix <issue> [<comment>] - Resolves and marks an issue as "Won't Fix", with optional comment
+* assign <issue> [<userID>] - Assign an issue to a given userID, defaults to the current user
+* unassign <issue> - Unassign an issue
+* create <project> <type> <summary> - Creates a new issue
+* describe <issue> [<description>] - Prints the description of an issue, or replaces it if a new description is provided
+* priority <issue> <priority> - Sets the priority of an issue
+* watch <issue> - Watches an issue
+* unwatch <issue> - Stop watching an issue
+* gettoken - Get an OAuth authorization token and URL for granting permissions in Jira
+* committoken - Commit an OAuth authorization token once it has been granted permissions in Jira
+
 ## Planned features
 
 Better, more customizable response patterns.<br />

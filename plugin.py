@@ -123,9 +123,9 @@ class Jira(callbacks.PluginRegexp):
         }
         self.jira[user] = JIRA(options = options, oauth = oauth_dict)
 
-    def getIssue(self, irc, msg, match):
+    def getIssue(self, irc, msg, match, force=False):
         """Get a Jira Issue"""
-        if not ircutils.isChannel(msg.args[0]):
+        if not ircutils.isChannel(msg.args[0]) and not force:
             return
         if conf.get(conf.supybot.plugins.Jira.lookup, msg.args[0]) == False:
             return
@@ -166,6 +166,15 @@ class Jira(callbacks.PluginRegexp):
             replytext = (self.template % values)
             irc.reply(replytext, prefixNick=False)
     getIssue.__doc__ = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
+
+    def issue(self, irc, msg, args, ticket):
+        """<ticket>
+
+        Prints details for a given issue."""
+        regex = '(?P<issue>%s)' % conf.supybot.plugins.Jira.snarfRegex
+        m = re.search(regex, ticket)
+        return self.getIssue(irc, msg, m, force=True)
+    issue = wrap(issue, ['text'])
 
     def comment(self, irc, msg, args, matched_ticket, comment):
         """<ticket> <comment>
@@ -293,11 +302,35 @@ class Jira(callbacks.PluginRegexp):
             assignee = user
         try:
             self.jira[user].assign_issue(matched_ticket.string, assignee)
-            irc.reply("Issue %s assigned to %s" % (matched_ticket.string, assignee) )
+            issue = self.jira[user].issue(matched_ticket.string)
+            url = ''.join((self.server, '/browse/', issue.key))
+            irc.reply("Issue assigned to %s: %s" % (assignee, url))
         except Exception as detail:
             irc.reply("Cannot assign %s to %s. Error %s." % (matched_ticket.string, assignee, detail) )
             return
     assign = wrap(assign, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), optional('somethingWithoutSpaces')])
+
+    def unassign(self, irc, msg, args, matched_ticket):
+        """<ticket>
+
+        Unassigns the issue."""
+        user = msg.user
+        if (self.jira.has_key( user ) != True):
+            try:
+                self.establishConnection(user)
+            except:
+                irc.reply("Cannot establish connection. Probably invalid or no token.")
+                return
+        try:
+            self.jira[user].assign_issue(matched_ticket.string, None)
+            issue = self.jira[user].issue(matched_ticket.string)
+            url = ''.join((self.server, '/browse/', issue.key))
+            irc.reply("Issue unassigned: %s" % (url,))
+        except Exception as detail:
+            irc.reply("Cannot unassign %s. Error %s." % (matched_ticket.string, detail) )
+            return
+    unassign = wrap(unassign, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern.")])
+
 
     def create(self, irc, msg, args, matched_proj, issuetype, title):
         """<project> <issue type> <title>
@@ -336,12 +369,15 @@ class Jira(callbacks.PluginRegexp):
                 return
         try:
             issue = self.jira[user].issue(matched_ticket.string)
-            issue.update(description = text)
-            irc.reply("OK. Description changed.")
+            if text:
+                issue.update(description = text)
+                irc.reply("OK. Description changed.")
+            else:
+                irc.reply(issue.fields.description)
         except Exception as detail:
             irc.reply("Cannot change issue description. Error %s." % detail)
             return
-    describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), 'text'])
+    describe = wrap(describe, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern."), optional('text')])
 
     def priority(self, irc, msg, args, matched_ticket, prio):
         """<issue> <priority>
@@ -409,6 +445,42 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("Cannot change the watchers list. Error: %s." %detail)
             return
     unwatch = wrap(unwatch, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the issue ID like JRA-123, but it doesn't match the pattern.")])
+
+    def issues(self, irc, msg, args, search_text):
+        """<search_text>
+
+        Searches Jira issue summaries for <search_text>.
+        """
+        replies = []
+        issues = self.jira[self.user].search_issues("summary ~ {0}".format(search_text))
+        for issue in issues:
+            try:
+                assignee = issue.fields.assignee.displayName
+            except:
+                assignee = "Unassigned"
+
+            try:
+                time = issue.fields.timeestimate
+                hours = time / 60 / 60
+                minutes = time / 60 % 60
+                displayTime = " / %ih%im" % (hours, minutes)
+            except:
+                displayTime = ""
+
+            url = ''.join((self.server, '/browse/', issue.key))
+
+            values = {  "type": issue.fields.issuetype.name,
+                        "key": issue.key,
+                        "summary": issue.fields.summary,
+                        "status": _c(_b(issue.fields.status.name), "green"),
+                        "assignee": _c(assignee, "blue"),
+                        "displayTime": displayTime,
+                        "url": '',
+                    }
+            replies.append(self.template % values)
+        irc.reply('|| '.join(replies), prefixNick=False)
+        return
+    issues = wrap(issues, ['text'])
 
     def gettoken(self, irc, msg, args, force):
         """
