@@ -452,7 +452,7 @@ class Jira(callbacks.PluginRegexp):
         Searches Jira issue summaries for <search_text>.
         """
         replies = []
-        issues = self.jira[self.user].search_issues("summary ~ {0}".format(search_text))
+        issues = self.jira[self.user].search_issues("summary ~ '{0}'".format(search_text))
         for issue in issues:
             try:
                 assignee = issue.fields.assignee.displayName
@@ -478,7 +478,10 @@ class Jira(callbacks.PluginRegexp):
                         "url": '',
                     }
             replies.append(self.template % values)
-        irc.reply('|| '.join(replies), prefixNick=False)
+        if replies:
+            irc.reply('|| '.join(replies), prefixNick=False)
+        else:
+            irc.reply("No issues found matching '{0}'.".format(search_text))
         return
     issues = wrap(issues, ['text'])
 
