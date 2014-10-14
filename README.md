@@ -82,21 +82,23 @@ Once you set up linked application in Jira, you can perform this kind of chat wi
 ```
 
 Full list of commands (all of which besides "issue(s)" require OAuth):
-* issue <issue> - Displays an issue, the same as a default snarfed response
-* issues <searchtext> - Returns a list of Jira issues with matching summaries
-* comment <issue> <comment> - Comments on a given issue
-* status <issue> <status> - Changes the status of an issue
-* resolve <issue> [<comment>] - Resolves an issue, with optional comment
-* wontfix <issue> [<comment>] - Resolves and marks an issue as "Won't Fix", with optional comment
-* assign <issue> [<userID>] - Assign an issue to a given userID, defaults to the current user
-* unassign <issue> - Unassign an issue
-* create <project> <type> <summary> - Creates a new issue
-* describe <issue> [<description>] - Prints the description of an issue, or replaces it if a new description is provided
-* priority <issue> <priority> - Sets the priority of an issue
-* watch <issue> - Watches an issue
-* unwatch <issue> - Stop watching an issue
-* gettoken - Get an OAuth authorization token and URL for granting permissions in Jira
-* committoken - Commit an OAuth authorization token once it has been granted permissions in Jira
+```
+issue <issue> - Displays an issue, the same as a default snarfed response
+issues <searchtext> - Returns a list of Jira issues with matching summaries
+comment <issue> <comment> - Comments on a given issue
+status <issue> <status> - Changes the status of an issue
+resolve <issue> [<comment>] - Resolves an issue, with optional comment
+wontfix <issue> [<comment>] - Resolves and marks an issue as "Won't Fix", with optional comment
+assign <issue> [<userID>] - Assign an issue to a given userID, defaults to the current user
+unassign <issue> - Unassign an issue
+create <project> <type> <summary> - Creates a new issue
+describe <issue> [<description>] - Prints the description of an issue, or replaces it if a new description is provided
+priority <issue> <priority> - Sets the priority of an issue
+watch <issue> - Watches an issue
+unwatch <issue> - Stop watching an issue
+gettoken - Get an OAuth authorization token and URL for granting permissions in Jira
+committoken - Commit an OAuth authorization token once it has been granted permissions in Jira
+```
 
 ## Planned features
 
