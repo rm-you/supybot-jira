@@ -373,7 +373,7 @@ class Jira(callbacks.PluginRegexp):
                 issue.update(description = text)
                 irc.reply("OK. Description changed.")
             else:
-                irc.reply(issue.fields.description)
+                irc.reply("({0} {1}) {2}: {3}".format(issue.fields.issuetype.name, matched_ticket.string, issue.fields.summary, issue.fields.description))
         except Exception as detail:
             irc.reply("Cannot change issue description. Error %s." % detail)
             return
