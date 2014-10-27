@@ -50,6 +50,16 @@ except:
     _ = lambda x:x
 
 
+def display_time(time):
+    try:
+        hours = time / 60 / 60
+        minutes = time / 60 % 60
+        displayTime = " / %ih%im" % (hours, minutes)
+    except:
+        displayTime = ""
+    return displayTime
+
+
 class OAuth1SessionNoVerify(OAuth1Session):
     def __init__(self, *args, **kwargs):
         self._old_post = self.post
@@ -144,14 +154,7 @@ class Jira(callbacks.PluginRegexp):
             except:
                 assignee = "Unassigned"
 
-            try:
-                time = issue.fields.timeestimate
-                hours = time / 60 / 60
-                minutes = time / 60 % 60
-                displayTime = " / %ih%im" % (hours, minutes)
-            except:
-                displayTime = ""
-
+            displayTime = display_time(issue.fields.timeestimate)
             url = ''.join((self.server, '/browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
@@ -459,14 +462,7 @@ class Jira(callbacks.PluginRegexp):
             except:
                 assignee = "Unassigned"
 
-            try:
-                time = issue.fields.timeestimate
-                hours = time / 60 / 60
-                minutes = time / 60 % 60
-                displayTime = " / %ih%im" % (hours, minutes)
-            except:
-                displayTime = ""
-
+            displayTime = display_time(issue.fields.timeestimate)
             url = ''.join((self.server, '/browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
@@ -484,6 +480,40 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("No issues found matching '{0}'.".format(search_text))
         return
     issues = wrap(issues, ['text'])
+
+    def assigned(self, irc, msg, args, username):
+        """<username>
+
+        Searches Jira for issues assigned to <username>, defaults to current user."""
+        if not username:
+            username = msg.user
+
+        replies = []
+        issues = self.jira[self.user].search_issues("assignee = '{0}' and status != Done".format(username))
+        for issue in issues:
+            try:
+                assignee = issue.fields.assignee.displayName
+            except:
+                assignee = "No DisplayName"
+
+            displayTime = display_time(issue.fields.timeestimate)
+            url = ''.join((self.server, '/browse/', issue.key))
+
+            values = {  "type": issue.fields.issuetype.name,
+                        "key": issue.key,
+                        "summary": issue.fields.summary,
+                        "status": _c(_b(issue.fields.status.name), "green"),
+                        "assignee": _c(assignee, "blue"),
+                        "displayTime": displayTime,
+                        "url": '',
+                    }
+            replies.append(self.template % values)
+        if replies:
+            irc.reply('|| '.join(replies), prefixNick=False)
+        else:
+            irc.reply("No issues found assigned to '{0}'.".format(username))
+        return
+    assigned = wrap(assigned, [ optional('text') ])
 
     def gettoken(self, irc, msg, args, force):
         """

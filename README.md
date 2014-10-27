@@ -81,10 +81,11 @@ Once you set up linked application in Jira, you can perform this kind of chat wi
 <pybot> user: Resolved successfully
 ```
 
-Full list of commands (all of which besides "issue(s)" require OAuth):
+Full list of commands (all of which besides "issue(s)" and "assigned" require OAuth):
 ```
 issue <issue> - Displays an issue, the same as a default snarfed response
 issues <searchtext> - Returns a list of Jira issues with matching summaries
+assigned [<userID>] - Returns a list of Jira issues assigned to the given userID, defaults to the current user
 comment <issue> <comment> - Comments on a given issue
 status <issue> <status> - Changes the status of an issue
 resolve <issue> [<comment>] - Resolves an issue, with optional comment
