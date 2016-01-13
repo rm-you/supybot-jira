@@ -56,7 +56,6 @@ __url__ = 'https://github.com/rm-you/supybot-jira'
 
 from . import config
 from . import plugin
-from imp import reload
 # In case we're being reloaded.
 imp.reload(config)
 imp.reload(plugin)

@@ -186,7 +186,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -207,7 +207,7 @@ class Jira(callbacks.PluginRegexp):
 
         Changes the status of the ticket to the requested one."""
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -242,7 +242,7 @@ class Jira(callbacks.PluginRegexp):
 
     def ResolveIssue(self, irc, msg, matched_ticket, resolution, comment):
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -295,7 +295,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -318,7 +318,7 @@ class Jira(callbacks.PluginRegexp):
 
         Unassigns the issue."""
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -342,7 +342,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -364,7 +364,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -389,7 +389,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -412,7 +412,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -434,7 +434,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (( user in self.jira) != True):
+        if (user not in self.jira): 
             try:
                 self.establishConnection(user)
             except:
@@ -570,7 +570,7 @@ class Jira(callbacks.PluginRegexp):
         user = msg.user
 
         try:
-            if ( ('request' in self.tokens[user]) != True):
+            if ('request' not in self.tokens[user]):
                 irc.reply("No request token found. You need to first request a token with 'gettoken'.",private=True,notice=False)
                 return
         except:
