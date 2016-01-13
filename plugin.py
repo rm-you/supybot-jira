@@ -155,7 +155,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "Unassigned"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
@@ -306,7 +306,7 @@ class Jira(callbacks.PluginRegexp):
         try:
             self.jira[user].assign_issue(matched_ticket.string, assignee)
             issue = self.jira[user].issue(matched_ticket.string)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
             irc.reply("Issue assigned to %s: %s" % (assignee, url))
         except Exception as detail:
             irc.reply("Cannot assign %s to %s. Error %s." % (matched_ticket.string, assignee, detail) )
@@ -327,7 +327,7 @@ class Jira(callbacks.PluginRegexp):
         try:
             self.jira[user].assign_issue(matched_ticket.string, None)
             issue = self.jira[user].issue(matched_ticket.string)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
             irc.reply("Issue unassigned: %s" % (url,))
         except Exception as detail:
             irc.reply("Cannot unassign %s. Error %s." % (matched_ticket.string, detail) )
@@ -463,7 +463,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "Unassigned"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
@@ -497,7 +497,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "No DisplayName"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
