@@ -61,7 +61,7 @@ def configure(advanced):
             SSL certificate?""", default=False)
     OAuthConsumerName = something("""What is the consumer name as per the Jira linked applications?""")
     OAuthConsumerKey = something("""What is the consumer secret key as per the Jira linked applications?""")
-    OAuthVerifier = something("""What is the consumer verifier string for Jira OAuth?""", default=u'none')
+    OAuthVerifier = something("""What is the consumer verifier string for Jira OAuth?""", default='none')
     OAuthConsumerSSLKey = something("""What is the filename holding the SSL key bound with the Jira trusted cert?""")
     OAuthTokenDatabase = something("""What is the filename holding the yaml structure with OAuth tokens?""")
 

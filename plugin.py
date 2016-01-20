@@ -100,7 +100,7 @@ class Jira(callbacks.PluginRegexp):
             self.rsa_key = f.read()
             f.close()
         except:
-            print "Cannot access the rsa key file %s" % self.rsa_key_file
+            print("Cannot access the rsa key file %s" % self.rsa_key_file)
             self.rsa_key = None
         try:
             f = open(self.tokenstore)
@@ -142,10 +142,10 @@ class Jira(callbacks.PluginRegexp):
         issueName = match.group('issue')
         try:
             issue = self.jira[self.user].issue(issueName)
-        except Exception, e:
+        except Exception as e:
             self.log.exception('Error loading issue.', e)
             irc.reply("Cannot find %s bug." % issueName)
-            print "Invalid Jira snarf: %s" % issueName
+            print("Invalid Jira snarf: %s" % issueName)
             return
 
         if issue:
@@ -155,7 +155,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "Unassigned"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
@@ -186,7 +186,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -198,7 +198,7 @@ class Jira(callbacks.PluginRegexp):
                 irc.reply("OK. Comment created.")
         except Exception as detail:
             irc.reply("Cannot create comment. Error: %s" % detail)
-            print "Cannot comment on: %s. Error %s." % ( matched_ticket.string, detail)
+            print("Cannot comment on: %s. Error %s." % ( matched_ticket.string, detail))
             return
     comment = wrap(comment, [('matches', re.compile(str(conf.supybot.plugins.Jira.snarfRegex)), "The first argument should be the ticket number, but it doesn't match the pattern."), 'text'])
 
@@ -207,7 +207,7 @@ class Jira(callbacks.PluginRegexp):
 
         Changes the status of the ticket to the requested one."""
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -242,7 +242,7 @@ class Jira(callbacks.PluginRegexp):
 
     def ResolveIssue(self, irc, msg, matched_ticket, resolution, comment):
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -295,7 +295,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -306,7 +306,7 @@ class Jira(callbacks.PluginRegexp):
         try:
             self.jira[user].assign_issue(matched_ticket.string, assignee)
             issue = self.jira[user].issue(matched_ticket.string)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
             irc.reply("Issue assigned to %s: %s" % (assignee, url))
         except Exception as detail:
             irc.reply("Cannot assign %s to %s. Error %s." % (matched_ticket.string, assignee, detail) )
@@ -318,7 +318,7 @@ class Jira(callbacks.PluginRegexp):
 
         Unassigns the issue."""
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -327,7 +327,7 @@ class Jira(callbacks.PluginRegexp):
         try:
             self.jira[user].assign_issue(matched_ticket.string, None)
             issue = self.jira[user].issue(matched_ticket.string)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
             irc.reply("Issue unassigned: %s" % (url,))
         except Exception as detail:
             irc.reply("Cannot unassign %s. Error %s." % (matched_ticket.string, detail) )
@@ -342,7 +342,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -353,7 +353,7 @@ class Jira(callbacks.PluginRegexp):
             irc.reply("OK. %s created." % newissue.key)
         except Exception as detail:
             irc.reply("Cannot create issue. Check the type %s is valid for the project. Error: %s." % (issuetype, detail) )
-            print "Cannot comment on: %s" % matched_proj.string
+            print("Cannot comment on: %s" % matched_proj.string)
             return
     create = wrap(create, [('matches', re.compile('^[A-Z]+$'), "The first argument should be the project abbrev like JRA, but it doesn't match the pattern."), 'something', 'text'])
 
@@ -364,7 +364,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -389,7 +389,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -412,7 +412,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira):
             try:
                 self.establishConnection(user)
             except:
@@ -434,7 +434,7 @@ class Jira(callbacks.PluginRegexp):
 
         #Get user name. Very simple. Assumes that the data in ident is authoritative and no-one can fake it.
         user = msg.user
-        if (self.jira.has_key( user ) != True):
+        if (user not in self.jira): 
             try:
                 self.establishConnection(user)
             except:
@@ -463,7 +463,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "Unassigned"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
@@ -497,7 +497,7 @@ class Jira(callbacks.PluginRegexp):
                 assignee = "No DisplayName"
 
             displayTime = display_time(issue.fields.timeestimate)
-            url = ''.join((self.server, '/browse/', issue.key))
+            url = ''.join((self.server, 'browse/', issue.key))
 
             values = {  "type": issue.fields.issuetype.name,
                         "key": issue.key,
@@ -527,10 +527,10 @@ class Jira(callbacks.PluginRegexp):
         user = msg.user
 
         try:
-            if (self.tokens[user].has_key('access_key') and force != "force"):
+            if ('access_key' in self.tokens[user] and force != "force"):
                 irc.reply("You seem to already have a token. Use force to get a new one.")
                 return
-            if (self.tokens[user].has_key('request_key') and force != "force"):
+            if ('request_key' in self.tokens[user] and force != "force"):
                 irc.reply("You have requested a token already. If you accepted access to Jira, use 'committoken' Use 'gettoken force' to request a new token.",private=True,notice=False)
                 return
         except:
@@ -570,7 +570,7 @@ class Jira(callbacks.PluginRegexp):
         user = msg.user
 
         try:
-            if ( self.tokens[user].has_key('request') != True):
+            if ('request' not in self.tokens[user]):
                 irc.reply("No request token found. You need to first request a token with 'gettoken'.",private=True,notice=False)
                 return
         except:
